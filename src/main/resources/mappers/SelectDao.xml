@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="my.select.dao.SelectDao">
+    <select id="getAllSelects" resultType="my.select.netData.down.select.GetSelectDown">
+        SELECT s.*,t.user_id user_id,t.course_id course_id
+        FROM `select` s,`teach` t,`course` c
+        WHERE s.teach_id = t.id
+        AND t.course_id = c.id
+        <if test="state != null">
+            AND s.state = #{state}
+        </if>
+        <if test='name != "" '>
+            AND c.name LIKE '%${name}%'
+        </if>
+        <if test="offset != null">
+            LIMIT #{offset},10
+        </if>
+    </select>
+    <select id="getAllSelectsCount" resultType="Integer">
+        SELECT COUNT(1)
+        FROM `select` s,`teach` t,`course` c
+        WHERE s.teach_id = t.id
+        AND t.course_id = c.id
+        <if test="state != null">
+            AND s.state = #{state}
+        </if>
+        <if test='name != "" '>
+            AND c.name LIKE '%${name}%'
+        </if>
+    </select>
+    <select id="getSelectByTeachId" resultType="my.select.entity.Select">
+        SELECT * FROM `select`
+        WHERE teach_id = #{teachId}
+    </select>
+    <insert id="insertSelect" parameterType="my.select.netData.up.select.InsertSelectUp">
+        INSERT INTO `select`(teach_id,count,select_start_time,select_end_time,state)
+        VALUES (#{teachId},#{count},#{selectStartTime,jdbcType=TIMESTAMP},#{selectEndTime,jdbcType=TIMESTAMP},#{state})
+    </insert>
+    <update id="deleteSelect">
+        UPDATE `select`
+        SET state = 0
+        WHERE id = #{id}
+    </update>
+    <update id="deleteSelectByCourseId">
+        UPDATE `select` s,`teach` t,`course` c
+        SET s.state = 0
+        WHERE s.teach_id = t.id
+        AND t.course_id = c.id
+        AND  c.id = #{id}
+    </update>
+    <update id="deleteSelectByTeachId">
+        UPDATE `select` s
+        SET s.state = 0
+        WHERE s.teach_id = #{teachId}
+    </update>
+    <update id="updateSelect">
+        UPDATE `select`
+        SET teach_id = #{teachId},count = #{count},select_start_time = #{selectStartTime},select_end_time = #{selectEndTime},state = #{state}
+        WHERE id = #{id}
+    </update>
+    <update id="chooseSelect">
+        UPDATE `select`
+        SET count = count -1
+        WHERE id = #{id}
+        AND count > 0
+    </update>
+    <update id="ascSelectCount">
+        UPDATE `select`
+        SET count = count + 1
+        WHERE id = #{selectId}
+    </update>
+</mapper>

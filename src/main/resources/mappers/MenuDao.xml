@@ -1,0 +1,30 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="my.select.dao.MenuDao">
+    <select id="getAllMenus" resultType="my.select.entity.Menu">
+        SELECT * FROM `menu`
+        WHERE 1=1
+        AND visible = 1
+        <if test='module != "" '>
+            AND module = #{module}
+        </if>
+        <if test="state != null">
+            AND state = #{state};
+        </if>
+    </select>
+    <insert id="insertMenu">
+        INSERT INTO `menu`(name,en_name,path,module,state,visible)
+        VALUES (#{name},#{enName},#{path},#{module},#{state},1)
+    </insert>
+    <update id="deleteMenu">
+        UPDATE `menu`
+        SET state = 0
+        WHERE id = #{id}
+    </update>
+    <update id="updateMenu">
+        UPDATE `menu`
+        SET name = #{name},en_name = #{enName},path = #{path},module = #{module},state = #{state}
+        WHERE id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!-- 配置整合mybatis -->
+    <!-- 1 配置数据库配置文件 -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <!-- 2 数据库链接池 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${driver}"/>
+        <property name="jdbcUrl" value="${url}"/>
+        <property name="user" value="${user}"/>
+        <property name="password" value="${password}"/>
+
+        <property name="maxPoolSize" value="1000"/>
+        <property name="minPoolSize" value="30"/>
+        <property name="autoCommitOnClose" value="false"/>
+        <property name="checkoutTimeout" value="5000"/>
+        <property name="acquireRetryAttempts" value="2"/>
+    </bean>
+
+    <!-- 3 配置sqlSessionFaction -->
+    <bean id="sqlSessionFaction" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 注入数据库连接池 -->
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <property name="typeAliasesPackage" value="my.select.entity"/>
+        <property name="mapperLocations" value="classpath:/mappers/*.xml"/>
+    </bean>
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="UTF-8" />
+        <!-- 指定所上传文件的总大小不能超过200KB。注意maxUploadSize属性的限制不是针对单个文件，而是所有文件的容量之和 -->
+        <!-- <property name="maxUploadSize" value="200000"/> -->
+        <!-- 指定上传文件的临时路径 -->
+        <!-- <property name="uploadTempDir" value="uploadTempDirectory" /> -->
+    </bean>
+    <!-- 4 配置扫描Dao接口包 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFaction"/>
+        <property name="basePackage" value="my.select.dao"/>
+    </bean>
+
+    <bean id="redisCache" class="my.select.dao.cache.RedisCache">
+        <constructor-arg index="0" value="localhost"/>
+        <constructor-arg index="1" value="6379"/>
+    </bean>
+
+    <!-- 5 配置扫描Service接口包 -->
+    <context:component-scan base-package="my.select.service"/>
+
+    <!-- 6 配置扫描Controller接口包 -->
+    <context:component-scan base-package="my.select.controller"/>
+
+    <!-- 7 配置事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!-- 配置基于注解的声明式事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!-- 8 springMVC相关配置 -->
+    <!-- 开启springMVC注解 -->
+    <mvc:annotation-driven>
+        <!-- 解决返回中文乱码问题 -->
+        <mvc:message-converters register-defaults="false">
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <constructor-arg value="UTF-8"/>
+                <property name="writeAcceptCharset" value="false"/>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <!-- 静态资源配置 -->
+    <mvc:default-servlet-handler/>
+
+    <!-- 9 配置扫描Controller包 -->
+    <context:component-scan base-package="my.select.controller,my.select.system"/>
+
+    <!-- 10 配置前端跨域问题 -->
+    <mvc:cors>
+        <mvc:mapping path="/**"
+                     allowed-origins="*"
+                     allowed-methods="POST, GET, OPTIONS, DELETE, PUT"
+                     allowed-headers="Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With"
+                     allow-credentials="true" />
+    </mvc:cors>
+</beans>

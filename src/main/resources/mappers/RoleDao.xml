@@ -1,0 +1,60 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="my.select.dao.RoleDao">
+    <select id="getAllRoles" resultType="my.select.entity.Role">
+        SELECT * FROM `role`
+        WHERE 1=1
+        <if test="state != null">
+            AND state = #{state}
+        </if>
+    </select>
+    <insert id="insertRole">
+        INSERT INTO `role`(name,state)
+        VALUES (#{name},#{state})
+    </insert>
+    <update id="updateRole">
+        UPDATE `role`
+        SET name = #{name},state = #{state}
+        WHERE id = #{id}
+    </update>
+    <update id="deleteRole">
+        UPDATE `role`
+        SET state = 0
+        WHERE id = #{id}
+    </update>
+    <select id="getRoleUsers" resultType="my.select.netData.down.privilege.RUser">
+        SELECT u.id,u.name
+        FROM `user` u,`role_user` r
+        WHERE r.user_id = u.id
+        AND r.role_id = #{id}
+    </select>
+    <insert id="insertRoleUser">
+        INSERT ignore INTO `role_user`(user_id,role_id)
+        VALUES
+        <foreach collection="userList" item="userId" index="index" separator=",">
+            (#{userId},#{roleId})
+        </foreach>
+    </insert>
+    <delete id="deleteRoleUser">
+        DELETE FROM `role_user`
+        WHERE role_id = #{roleId}
+    </delete>
+    <select id="getRoleMenus" resultType="my.select.netData.down.privilege.RMenu">
+        SELECT m.id,m.name,m.en_name,m.module
+        FROM `menu` m,`role_menus` r
+        WHERE r.menu_id = m.id
+        AND  r.role_id = #{roleId}
+    </select>
+    <delete id="deleteRoleMenu">
+        DELETE FROM `role_menus`
+        WHERE role_id = #{roleId}
+    </delete>
+    <insert id="insertRoleMenu">
+        INSERT ignore INTO `role_menus`(menu_id,role_id)
+        VALUES
+        <foreach collection="menuList" item="menuId" index="index" separator=",">
+            (#{menuId},#{roleId})
+        </foreach>
+    </insert>
+</mapper>

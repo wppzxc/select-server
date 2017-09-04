@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="my.select.dao.SelectInfoDao">
+    <select id="getSelectInfosByUser" resultType="my.select.netData.down.select.GetSelectInfoDown">
+        SELECT sf.state,sf.select_id,s.select_start_time,s.select_end_time,t.user_id,t.course_id
+        FROM `select_info` sf,`select` s,`teach` t,`course` c
+        WHERE sf.user_id = #{userId}
+        AND sf.select_id = s.id
+        AND s.teach_id = t.id
+        AND c.id = t.course_id
+        <if test='name != "" '>
+            AND c.name LIKE '%${name}%'
+        </if>
+        <if test="state != null">
+            AND sf.state = #{state}
+        </if>
+        <if test="offset != null">
+            LIMIT #{offset},10
+        </if>
+    </select>
+    <select id="getSelectInfosCountByUser" resultType="Integer">
+        SELECT COUNT(1)
+        FROM `select_info` sf,`select` s,`teach` t,`course` c
+        WHERE sf.user_id = #{userId}
+        AND sf.select_id = s.id
+        AND s.teach_id = t.id
+        AND c.id = t.course_id
+        <if test='name != "" '>
+            AND c.name = #{name}
+        </if>
+    </select>
+    <delete id="deleteSelectInfo">
+        DELETE FROM `select_info`
+        WHERE user_id = #{userId}
+        AND select_id = #{selectId}
+    </delete>
+    <insert id="insertSelectInfo">
+        INSERT ignore INTO `select_info`(user_id,select_id)
+        VALUES (#{userId},#{selectId})
+    </insert>
+</mapper>

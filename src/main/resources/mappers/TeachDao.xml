@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="my.select.dao.TeachDao">
+    <select id="getAllTeach" resultType="my.select.entity.Teach">
+        SELECT *
+        FROM `teach` t,`user` u
+        WHERE 1=1
+        AND t.user_id = u.id
+        <if test="state != null">
+            AND t.state = #{state}
+        </if>
+        <if test='name != "" '>
+            AND u.name LIKE '%${name}%'
+        </if>
+        <if test="offset != null">
+            LIMIT #{offset},10
+        </if>
+    </select>
+
+    <select id="getTeachByUserIdAndCourseId" resultType="my.select.entity.Teach">
+        SELECT * from `teach`
+        WHERE user_id = #{userId}
+        AND course_id= #{courseId}
+    </select>
+
+    <select id="getAllTeachCount" resultType="Integer">
+        SELECT COUNT(1)
+        FROM `teach` t,`user` u
+        WHERE 1=1
+        AND t.user_id = u.id
+        <if test="state != null">
+            AND t.state = #{state}
+        </if>
+        <if test='name != "" '>
+            AND u.name LIKE '%${name}%'
+        </if>
+    </select>
+
+    <insert id="insertTeach">
+        INSERT INTO `teach`(user_id,course_id,state)
+        VALUES (#{userId},#{courseId},#{state})
+    </insert>
+
+    <update id="updateTeach">
+        UPDATE `teach`
+        SET user_id = #{userId},course_id = #{courseId},state = #{state}
+        WHERE id = #{id}
+    </update>
+    <update id="deleteTeach" parameterType="Integer">
+        UPDATE `teach`
+        SET state = 0
+        WHERE id = #{id}
+    </update>
+    <update id="deleteTeachByCourseId">
+        UPDATE `teach`
+        SET state = 0
+        WHERE course_id = #{courseId}
+    </update>
+    <select id="getTeachOptions" resultType="my.select.netData.down.teach.GetTeachOptionsDown">
+        SELECT t.id teachId,u.name username, c.name course_name
+        FROM `teach` t,`user` u,`course` c
+        WHERE t.user_id = u.id
+        AND t.course_id = c.id
+        AND t.state = 1
+        <if test="arg != null">
+            AND c.name LIKE '%${arg}%'
+        </if>
+    </select>
+</mapper>
